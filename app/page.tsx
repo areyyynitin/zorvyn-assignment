@@ -14,9 +14,9 @@ export default function page() {
          wheelMultiplier: 1,
         }}
         >
-
           <HeroSection />
           <ScrollCards/>
+        
       
 
 

@@ -1,0 +1,272 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const CARD_IMAGES = [
+  "/row-1-column-1.png",
+  "/row-1-column-2.png",
+  "/row-1-column-3.png",
+];
+
+const CARD_BACKS = [
+  { num: "01", bg: "#b2b2b2", color: "#0f0f0f", text: "Discover something new every day." },
+  { num: "02", bg: "#ce2017", color: "#ffffff", text: "Bold moves, bold results." },
+  { num: "03", bg: "#2f2f2f", color: "#ffffff", text: "The quiet speaks the loudest." },
+];
+
+export default function ScrollCards() {
+  const cardContainerRef = useRef<HTMLDivElement>(null);
+  const stickyHeaderRef = useRef<HTMLHeadingElement>(null);
+  const cardRefs = [
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+    useRef<HTMLDivElement>(null),
+  ];
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const container = cardContainerRef.current!;
+    const header = stickyHeaderRef.current!;
+    const [c1, c2, c3] = cardRefs.map((r) => r.current!);
+
+    const map = (p: number, i0: number, i1: number, o0: number, o1: number) => {
+      const t = Math.max(0, Math.min(1, (p - i0) / (i1 - i0)));
+      return o0 + t * (o1 - o0);
+    };
+
+    const st = ScrollTrigger.create({
+      trigger: ".sc-sticky",
+      start: "top top",
+      end: `+=${window.innerHeight * 4}`,
+      scrub: true,
+      pin: true,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        const p = self.progress;
+
+        // ── Phase 1: Header fade-in (0.1 → 0.25) ──
+        gsap.set(header, {
+          y: map(p, 0.1, 0.25, 40, 0),
+          opacity: map(p, 0.1, 0.25, 0, 1),
+        });
+
+        // ── Phase 1: Container width (0 → 0.25): 75% → 60% ──
+        gsap.set(container, {
+          width: `${map(p, 0, 0.25, 75, 60)}%`,
+        });
+
+        // ── Phase 2: Gap opens (0.35 → 0.6) ──
+        const gapT = map(p, 0.35, 0.6, 0, 1);
+        gsap.set(container, { gap: `${gapT * 20}px` });
+
+        // Card 1: left corners stay 20, right corners grow 0 → 20
+        gsap.set(c1, {
+          borderRadius: `20px ${gapT * 20}px ${gapT * 20}px 20px`,
+        });
+        // Card 2: all corners grow 0 → 20
+        gsap.set(c2, {
+          borderRadius: `${gapT * 20}px`,
+        });
+        // Card 3: right corners stay 20, left corners grow 0 → 20
+        gsap.set(c3, {
+          borderRadius: `${gapT * 20}px 20px 20px ${gapT * 20}px`,
+        });
+
+        // ── Phase 3: Flip + tilt (0.7 → 0.95) ──
+        const flipT = map(p, 0.7, 0.95, 0, 1);
+
+        gsap.set(c1, {
+          rotationY: flipT * 180,
+          y: flipT * 30,
+          rotationZ: flipT * -15,
+        });
+        gsap.set(c2, {
+          rotationY: flipT * 180,
+        });
+        gsap.set(c3, {
+          rotationY: flipT * 180,
+          y: flipT * 30,
+          rotationZ: flipT * 15,
+        });
+      },
+    });
+
+    const onResize = () => st.refresh();
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      st.kill();
+    };
+  }, []);
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+        .sc-card {
+          transform-style: preserve-3d;
+          will-change: transform, border-radius;
+        }
+        .sc-card-face {
+          position: absolute;
+          inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: inherit;
+          overflow: hidden;
+        }
+        .sc-card-back {
+          transform: rotateY(180deg);
+        }
+
+        @media (max-width: 999px) {
+          .sc-sticky {
+            height: auto !important;
+          }
+          .sc-sticky-header {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+          }
+          .sc-sticky-header h1 {
+            opacity: 1 !important;
+            transform: none !important;
+            white-space: normal !important;
+          }
+          .sc-card-container {
+            width: 100% !important;
+            flex-direction: column;
+            gap: 1.5rem !important;
+            perspective: none !important;
+          }
+          .sc-card {
+            width: 100% !important;
+            max-width: 380px;
+            margin: 0 auto;
+            border-radius: 20px !important;
+            transform: none !important;
+          }
+          .sc-card-back {
+            transform: none !important;
+          }
+        }
+      `}</style>
+
+      <div style={{ fontFamily: "'Instrument Serif', serif" }} className="bg-[#0f0f0f] text-white">
+
+        {/* Intro */}
+        <section className="w-full h-svh flex items-center justify-center text-center px-8 bg-[#0f0f0f]">
+          <h1 className="text-[clamp(2rem,4vw,4rem)] font-medium leading-none max-w-[30%]">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </h1>
+        </section>
+
+        {/* Sticky */}
+        <section className="sc-sticky relative w-full h-svh flex items-center justify-center bg-[#0f0f0f]">
+
+          {/* Header */}
+          <div
+            className="sc-sticky-header absolute z-10 pointer-events-none"
+            style={{ top: "20%", left: "50%", transform: "translate(-50%, -50%)" }}
+          >
+            <h1
+              ref={stickyHeaderRef}
+              className="text-[clamp(2rem,4vw,4rem)] font-medium text-center whitespace-nowrap text-white"
+              style={{ opacity: 0, transform: "translateY(40px)", willChange: "transform, opacity" }}
+            >
+              section 2 header
+            </h1>
+          </div>
+
+          {/* Card container */}
+          <div
+            ref={cardContainerRef}
+            className="sc-card-container relative flex"
+            style={{ width: "75%", perspective: "1000px", willChange: "width , gap" }}
+          >
+            {/* Card 1 */}
+            <div
+              ref={cardRefs[0]}
+              className="sc-card relative flex-1 aspect-[5/7]"
+              style={{ borderRadius: "20px 0 0 20px" }}
+            >
+              <div className="sc-card-face">
+                <img src={CARD_IMAGES[0]} alt="Card 1" className="w-full h-full object-cover block" />
+              </div>
+              <div
+                className="sc-card-face sc-card-back flex items-center justify-center text-center p-8"
+                style={{ background: CARD_BACKS[0].bg, color: CARD_BACKS[0].color }}
+              >
+                <span className="absolute top-6 left-6 opacity-40 text-sm">({CARD_BACKS[0].num})</span>
+                <p className="text-2xl font-medium leading-snug">{CARD_BACKS[0].text}</p>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div
+              ref={cardRefs[1]}
+              className="sc-card relative flex-1 aspect-[5/7]"
+              style={{ borderRadius: "0" }}
+            >
+              <div className="sc-card-face">
+                <img src={CARD_IMAGES[1]} alt="Card 2" className="w-full h-full object-cover block" />
+              </div>
+              <div
+                className="sc-card-face sc-card-back flex items-center justify-center text-center p-8"
+                style={{ background: CARD_BACKS[1].bg, color: CARD_BACKS[1].color }}
+              >
+                <span className="absolute top-6 left-6 opacity-40 text-sm">({CARD_BACKS[1].num})</span>
+                <p className="text-2xl font-medium leading-snug">{CARD_BACKS[1].text}</p>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div
+              ref={cardRefs[2]}
+              className="sc-card relative flex-1 aspect-[5/7]"
+              style={{ borderRadius: "0 20px 20px 0" }}
+            >
+              <div className="sc-card-face">
+                <img src={CARD_IMAGES[2]} alt="Card 3" className="w-full h-full object-cover block" />
+              </div>
+              <div
+                className="sc-card-face sc-card-back flex items-center justify-center text-center p-8"
+                style={{ background: CARD_BACKS[2].bg, color: CARD_BACKS[2].color }}
+              >
+                <span className="absolute top-6 left-6 opacity-40 text-sm">({CARD_BACKS[2].num})</span>
+                <p className="text-2xl font-medium leading-snug">{CARD_BACKS[2].text}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Outro */}
+        <section className="w-full h-svh flex items-center justify-center text-center px-8 bg-[#0f0f0f]">
+          <h1 className="text-[clamp(2rem,4vw,4rem)] font-medium leading-none max-w-[30%]">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </h1>
+        </section>
+
+      </div>
+    </>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -47,13 +47,11 @@ export default function ScrollCards() {
       onUpdate: (self) => {
         const p = self.progress;
 
-        // Header
         gsap.set(header, {
           y: map(p, 0.1, 0.25, 40, 0),
           opacity: map(p, 0.1, 0.25, 0, 1),
         });
 
-        // Gap via transform
         const gapT = map(p, 0.35, 0.6, 0, 1);
         const gapPx = gapT * 20;
 
@@ -65,7 +63,6 @@ export default function ScrollCards() {
           },
         });
 
-        // Flip
         const flipT = map(p, 0.7, 0.95, 0, 1);
 
         gsap.set(container, {
@@ -130,17 +127,14 @@ export default function ScrollCards() {
 
       <div className="bg-[#0f0f0f] text-white">
 
-        {/* Intro */}
         <section className="w-full h-svh flex items-center justify-center text-center px-8">
           <h1 className="text-5xl max-w-7xl ">
           Record income or expenses with a simple input flow, and keep your financial data organized and up to date.
           </h1>
         </section>
 
-        {/* Sticky */}
         <section className="sc-sticky relative w-full h-svh flex items-center justify-center">
 
-          {/* Header */}
           <div
             className="absolute z-10"
             style={{ top: "20%", left: "50%", transform: "translate(-50%, -50%)" }}
@@ -150,7 +144,6 @@ export default function ScrollCards() {
             </h1>
           </div>
 
-          {/* Cards */}
           <div
             ref={cardContainerRef}
             className="sc-card-container"
@@ -172,7 +165,6 @@ export default function ScrollCards() {
                       : "0",
                 }}
               >
-                {/* ✅ FRONT (SLICED IMAGE) */}
                 <div
                   className="sc-card-face sc-card-front"
                   style={{
@@ -187,7 +179,6 @@ export default function ScrollCards() {
                   }}
                 />
 
-                {/* BACK */}
                 <div
                   className="sc-card-face sc-card-back flex items-center justify-center text-center p-8"
                   style={{
@@ -203,7 +194,6 @@ export default function ScrollCards() {
           </div>
         </section>
 
-        {/* Outro */}
         <section className="w-full h-svh flex items-center justify-center text-center px-8">
           <h1 className="text-5xl max-w-7xl">
          Switch seamlessly between Light and Dark Mode for a comfortable viewing experience anytime. With Admin Role Access
